@@ -71,7 +71,8 @@ python -m pip install --upgrade pip
 if (Test-Path -Path 'requirements.txt') {
 	Write-Host "Installing requirements from requirements.txt..."
 	python -m pip install -r requirements.txt
-} else {
+}
+else {
 	Write-Host "No requirements.txt found; skipping pip install step."
 }
 
@@ -83,5 +84,12 @@ if ($LASTEXITCODE -ne 0) {
 	exit $LASTEXITCODE
 }
 
-Write-Host "Tests passed - launching app using venv's python."
+Write-Host "Tests passed - Running DB Migrations."
+python run_migrations.py
+if ($LASTEXITCODE -ne 0) {
+	Write-Error "DB migration Failed (DB Migration exit code $LASTEXITCODE). Aborting run."
+	exit $LASTEXITCODE
+}
+
+Write-Host "DB Migrations done. launching app using venv's python."
 python -m uvicorn app.main:app --host 0.0.0.0 --port 4200
